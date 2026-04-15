@@ -65,7 +65,7 @@ export default function UploadZone({ onIngest, loading }) {
       </div>
 
       <div className="card">
-        <div className="card-title">Upload Files <span style={{color:'#94a3b8',fontWeight:400,textTransform:'none',letterSpacing:0}}>— TXT, CSV, EML</span></div>
+        <div className="card-title">Upload Files <span style={{color:'#94a3b8',fontWeight:400,textTransform:'none',letterSpacing:0}}>— TXT, CSV, EML, DOCX</span></div>
 
         {/* Drop zone */}
         <div

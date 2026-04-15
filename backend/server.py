@@ -171,4 +171,5 @@ if __name__ == '__main__':
     port = int(os.getenv('FLASK_PORT', 3002))
     print(f'\nIRIS backend starting on http://localhost:{port}')
     print('Make sure ANTHROPIC_API_KEY is set in .env\n')
-    app.run(port=port, debug=True)
+    debug = os.getenv('FLASK_DEBUG', 'false').lower() == 'true'
+    app.run(port=port, debug=debug)

@@ -5,6 +5,7 @@ const TABS = [
   { key: 'incident_snapshot',  label: 'Snapshot' },
   { key: 'attack_timeline',    label: 'Timeline' },
   { key: 'technical_analysis', label: 'Technical' },
+  { key: 'ioc_summary',        label: 'IOCs' },
   { key: 'impact_assessment',  label: 'Impact' },
   { key: 'recommendations',    label: 'Recommendations' },
 ];
@@ -302,6 +303,95 @@ function TechnicalTab({ data }) {
   );
 }
 
+function IocTab({ data }) {
+  const ioc = data.ioc_summary || {};
+  const tools = data.tools_used || [];
+  const systems = data.affected_systems || [];
+
+  const iocGroups = [
+    { label: 'IP Addresses',  items: ioc.ip_addresses || [] },
+    { label: 'Domains',       items: ioc.domains       || [] },
+    { label: 'File Hashes',   items: ioc.file_hashes   || [] },
+    { label: 'Accounts',      items: ioc.accounts      || [] },
+    { label: 'File Paths',    items: ioc.file_paths    || [] },
+    { label: 'Tools Used',    items: tools },
+    { label: 'Affected Systems', items: systems },
+  ].filter(g => g.items.length > 0);
+
+  const allIocs = [
+    ...(ioc.ip_addresses || []),
+    ...(ioc.domains      || []),
+    ...(ioc.file_hashes  || []),
+    ...(ioc.accounts     || []),
+    ...(ioc.file_paths   || []),
+  ];
+
+  const [copied, setCopied] = useState(false);
+
+  function copyAll() {
+    navigator.clipboard.writeText(allIocs.join('\n')).then(() => {
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    });
+  }
+
+  if (iocGroups.length === 0) {
+    return <div style={{color:'var(--muted)', fontSize:13}}>No IOCs extracted from the provided notes.</div>;
+  }
+
+  return (
+    <div style={{display:'flex', flexDirection:'column', gap:16}}>
+      {allIocs.length > 0 && (
+        <div style={{
+          display:'flex', alignItems:'center', justifyContent:'space-between',
+          padding:'10px 14px', background:'#fef2f2', border:'1px solid #fecaca', borderRadius:6,
+        }}>
+          <div style={{fontSize:12, color:'#991b1b', fontWeight:600}}>
+            {allIocs.length} IOC{allIocs.length !== 1 ? 's' : ''} extracted — copy for blocklisting or escalation
+          </div>
+          <button
+            onClick={copyAll}
+            style={{
+              fontSize:11, fontWeight:700, padding:'5px 12px', borderRadius:4,
+              background: copied ? '#16a34a' : '#dc2626', color:'#fff', border:'none', cursor:'pointer',
+            }}
+          >
+            {copied ? '✓ Copied' : 'Copy All IOCs'}
+          </button>
+        </div>
+      )}
+
+      <div style={{display:'grid', gridTemplateColumns:'1fr 1fr', gap:12}}>
+        {iocGroups.map(({ label, items }) => (
+          <div key={label} style={{
+            borderRadius:6, border:'1px solid var(--border)', overflow:'hidden',
+          }}>
+            <div style={{
+              padding:'7px 12px', background:'#f8fafc',
+              borderBottom:'1px solid var(--border)',
+              fontSize:10, fontWeight:700, textTransform:'uppercase',
+              letterSpacing:'0.07em', color:'var(--muted)',
+              display:'flex', justifyContent:'space-between',
+            }}>
+              <span>{label}</span>
+              <span style={{color:'var(--accent)'}}>{items.length}</span>
+            </div>
+            <div style={{padding:'8px 12px', display:'flex', flexDirection:'column', gap:3}}>
+              {items.map((v, i) => (
+                <div key={i} style={{
+                  fontSize:11, fontFamily:'monospace', color:'#334155',
+                  padding:'3px 0', borderBottom: i < items.length - 1 ? '1px solid #f1f5f9' : 'none',
+                  wordBreak:'break-all',
+                }}>{v}</div>
+              ))}
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
 function ImpactTab({ data }) {
   return (
     <div style={{display:'flex', flexDirection:'column', gap:14}}>
@@ -444,6 +534,7 @@ export default function ReportPreview({ report }) {
         {active === 'incident_snapshot'  && <SnapshotTab         data={report.incident_snapshot || {}} />}
         {active === 'attack_timeline'    && <TimelineTab         data={report.attack_timeline || {}} />}
         {active === 'technical_analysis' && <TechnicalTab        data={report.technical_analysis || {}} />}
+        {active === 'ioc_summary'        && <IocTab              data={report.technical_analysis || {}} />}
         {active === 'impact_assessment'  && <ImpactTab           data={report.impact_assessment || {}} />}
         {active === 'recommendations'    && <RecommendationsTab  data={report.recommendations || {}} />}
       </div>
