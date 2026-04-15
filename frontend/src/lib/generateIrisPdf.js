@@ -44,6 +44,11 @@ const S_MUTED = `font-size:10px;color:${TXM};`;
 
 // ── Utilities ──────────────────────────────────────────────────────────────────
 
+function trunc(str, n) {
+  if (!str) return '';
+  return str.length <= n ? str : str.slice(0, n).replace(/\s+\S*$/, '') + '…';
+}
+
 function formatHours(h) {
   if (!h || h <= 0) return 'Unknown';
   if (h < 1)   return '< 1 hour';
@@ -660,14 +665,14 @@ function execPage2(exec, date) {
 
     <h2>Summary &amp; Status</h2>
     ${[
-      { q:'What happened',  a: exec.what_happened },
-      { q:'What we did',    a: exec.what_we_did },
-      { q:'What it means',  a: exec.what_it_means },
-      { q:"What's next",    a: exec.whats_next },
+      { q:'What happened',  a: trunc(exec.what_happened, 320) },
+      { q:'What we did',    a: trunc(exec.what_we_did,   260) },
+      { q:'What it means',  a: trunc(exec.what_it_means, 260) },
+      { q:"What's next",    a: trunc(exec.whats_next,    220) },
     ].map(({ q, a }) => `
-      <div style="margin-bottom:7px;">
+      <div style="margin-bottom:6px;">
         <div style="${S_LABEL}color:${ACCENT};margin-bottom:2px;">${q}</div>
-        <div style="${S_BODY}padding-left:7px;border-left:1px solid #dbeafe;">${a || ''}</div>
+        <div style="font-size:10px;line-height:1.5;color:${TX};padding-left:7px;border-left:1px solid #dbeafe;">${a || ''}</div>
       </div>`).join('')}
 
     ${pageFooter('Executive Summary', date, 2, 3)}
@@ -683,7 +688,7 @@ function execPage3(impact, recs, date) {
   const topRecs = [
     ...(recs.immediate || []).filter(r => r.priority === 'Critical' || r.priority === 'High'),
     ...(recs.strategic || []).filter(r => r.priority === 'Critical' || r.priority === 'High'),
-  ].slice(0, 6);
+  ].slice(0, 4);
 
   const totalRecs  = [...(recs.immediate || []), ...(recs.strategic || [])].length;
   const lowerCount = totalRecs - topRecs.length;
@@ -701,7 +706,7 @@ function execPage3(impact, recs, date) {
 
     <div style="padding:8px 11px;border-left:3px solid #92400e;margin-bottom:10px;">
       <div style="${S_LABEL}color:#92400e;margin-bottom:3px;">Business Impact</div>
-      <div style="${S_BODY}">${impact.business_impact_narrative || ''}</div>
+      <div style="font-size:10px;line-height:1.5;color:${TX};">${trunc(impact.business_impact_narrative, 380) || ''}</div>
     </div>
 
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px;">
@@ -729,8 +734,8 @@ function execPage3(impact, recs, date) {
                   ${badge(r.priority, pc)}
                   <span style="font-size:9px;color:${TXM};font-weight:600;">${r.owner}</span>
                 </div>
-                <div style="${S_SMALL}font-weight:700;margin-bottom:3px;line-height:1.4;">${r.finding}</div>
-                <div style="${S_SMALL}color:${TXM};line-height:1.5;margin-bottom:4px;">${r.action}</div>
+                <div style="${S_SMALL}font-weight:700;margin-bottom:3px;line-height:1.4;">${trunc(r.finding, 80)}</div>
+                <div style="${S_SMALL}color:${TXM};line-height:1.5;margin-bottom:4px;">${trunc(r.action, 140)}</div>
                 <div style="font-size:9px;color:${TXM};padding-top:4px;border-top:1px solid ${pc}20;">Due: ${r.deadline}</div>
               </div>`;
           }).join('')}
