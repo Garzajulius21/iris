@@ -603,8 +603,8 @@ function page7(recs, date) {
     </div>
 
     ${pageFooter('Recommendations', date, 7, 7)}
-  </div>`;
-}
+  </div>
+  <style>.page:last-of-type{page-break-after:avoid!important}</style>`;
 
 // ── Executive Brief — Page 2: Summary ─────────────────────────────────────────
 
@@ -754,7 +754,8 @@ function execPage3(impact, recs, date) {
     </div>
 
     ${pageFooter('Impact & Priority Actions', date, 3, 3)}
-  </div>`;
+  </div>
+  <style>.page:last-of-type{page-break-after:avoid!important}</style>`;
 }
 
 // ── CSS ────────────────────────────────────────────────────────────────────────
@@ -766,7 +767,7 @@ function css() {
     body { font-family:'Inter',-apple-system,sans-serif; font-size:11px; color:#1e293b; background:#fff; line-height:1.6; }
     .page { width:210mm; padding:11mm 14mm 10mm; margin:0 auto; page-break-after:always; }
     .page-cover { width:210mm; min-height:297mm; margin:0 auto; page-break-after:always; display:flex; flex-direction:column; }
-    .page:last-child { page-break-after:avoid; }
+    .page:last-child, .page:last-of-type { page-break-after:avoid; }
     h2 { font-size:9px; font-weight:700; color:${NAVY}; border-bottom:2px solid ${NAVY}; padding-bottom:3px; margin:10px 0 7px; text-transform:uppercase; letter-spacing:0.08em; }
     table { width:100%; border-collapse:collapse; font-size:10px; }
     th { font-size:9px; font-weight:600; text-transform:uppercase; letter-spacing:0.06em; color:${ACCENT}; padding:4px 6px; border-bottom:2px solid #dbeafe; text-align:left; background:#f8fafc; }
