@@ -105,65 +105,66 @@ function pageFooter(label, date, pageNum, totalPages) {
     </div>`;
 }
 
-// ── Cover page (shared by both report modes) ───────────────────────────────────
+// ── Cover page — full-page navy ────────────────────────────────────────────────
 
-function pageCover(exec, snap, date, mode) {
+function pageCover(exec, snap, date) {
   const m      = exec.key_metrics || {};
   const sev    = m.severity || 'Unknown';
   const sc     = SEV_COLOR[sev] || '#94a3b8';
   const status = snap.current_status || exec.containment_status || 'Unknown';
   const stc    = STATUS_COLOR[status] || '#94a3b8';
-  const isExec = mode === 'executive';
 
-  const metricItems = [
-    [m.systems_affected >= 0 ? m.systems_affected : null,                    'Systems Affected',  null],
-    [m.records_at_risk  >  0 ? m.records_at_risk.toLocaleString() : null,   'Records at Risk',   m.records_at_risk > 0 ? '#dc2626' : null],
-    [m.dwell_time_hours >  0 ? formatHours(m.dwell_time_hours) : null,      'Undetected For',    m.dwell_time_hours > 72 ? '#dc2626' : null],
-    [m.estimated_cost_usd > 0 ? '$' + m.estimated_cost_usd.toLocaleString() : null, 'Est. Financial Cost', null],
+  const metrics = [
+    { val: m.systems_affected >= 0 ? m.systems_affected : null,                        label: 'Systems Affected',  alert: null },
+    { val: m.records_at_risk   >  0 ? m.records_at_risk.toLocaleString() : null,       label: 'Records at Risk',   alert: m.records_at_risk > 0 ? '#ef4444' : null },
+    { val: m.dwell_time_hours  >  0 ? formatHours(m.dwell_time_hours) : null,          label: 'Undetected For',    alert: m.dwell_time_hours > 72 ? '#ef4444' : null },
+    { val: m.estimated_cost_usd > 0 ? '$' + m.estimated_cost_usd.toLocaleString() : null, label: 'Est. Cost',      alert: null },
   ];
 
   return `
-  <div class="page-cover">
-    <!-- Navy header band -->
-    <div style="background:${NAVY};padding:18mm 18mm 14mm;display:flex;flex-direction:column;flex:1;">
-      <div style="font-size:8px;font-weight:700;letter-spacing:0.15em;color:#4b6a9b;text-transform:uppercase;margin-bottom:12px;padding-bottom:8px;border-bottom:1px solid #1e3a5f;">
-        CONFIDENTIAL${isExec ? ' — EXECUTIVE BRIEF' : ''}
+  <div class="page-cover" style="background:${NAVY};display:flex;flex-direction:column;padding:18mm 18mm 16mm;">
+
+    <!-- Top bar -->
+    <div style="display:flex;justify-content:space-between;align-items:center;padding-bottom:10px;border-bottom:1px solid #1e3a5f;margin-bottom:0;">
+      <div style="font-size:8px;font-weight:700;letter-spacing:0.16em;color:#4b6a9b;text-transform:uppercase;">Confidential — Incident Response Brief</div>
+      <div style="font-size:8px;color:#4b6a9b;">${date}</div>
+    </div>
+
+    <!-- Centre block — grows to fill available space -->
+    <div style="flex:1;display:flex;flex-direction:column;justify-content:center;padding:20mm 0 14mm;">
+      <div style="font-size:52px;font-weight:800;color:#fff;letter-spacing:-2px;line-height:1;margin-bottom:4px;">IRIS</div>
+      <div style="font-size:11px;font-weight:400;color:#4b6a9b;letter-spacing:0.1em;text-transform:uppercase;margin-bottom:28px;">Incident Response Intelligence Summary</div>
+
+      <div style="font-size:22px;font-weight:700;color:#e2e8f0;line-height:1.4;margin-bottom:20px;max-width:520px;">
+        ${exec.headline || m.incident_name || 'Incident Brief'}
       </div>
-      <div style="flex:1;display:flex;flex-direction:column;justify-content:center;padding:16px 0;">
-        <div style="font-size:44px;font-weight:800;color:#fff;letter-spacing:-1.5px;line-height:1;margin-bottom:3px;">IRIS</div>
-        <div style="font-size:10px;font-weight:400;color:#4b6a9b;letter-spacing:0.08em;text-transform:uppercase;margin-bottom:${isExec ? '4px' : '22px'};">Incident Response Intelligence Summary</div>
-        ${isExec ? `<div style="font-size:10px;font-weight:700;color:#d97706;letter-spacing:0.1em;text-transform:uppercase;margin-bottom:20px;">Executive Brief</div>` : ''}
-        <div style="font-size:19px;font-weight:700;color:#e2e8f0;line-height:1.4;margin-bottom:16px;max-width:480px;">${exec.headline || m.incident_name || 'Incident Brief'}</div>
-        <div style="display:flex;gap:8px;flex-wrap:wrap;">
-          <span style="display:inline-block;padding:3px 10px;border-radius:3px;font-size:10px;font-weight:700;letter-spacing:0.06em;background:${sc};color:#fff;">${sev.toUpperCase()} SEVERITY</span>
-          <span style="display:inline-block;padding:3px 10px;border-radius:3px;font-size:10px;font-weight:700;letter-spacing:0.06em;background:${stc};color:#fff;">${status.toUpperCase()}</span>
-        </div>
+
+      <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:32px;">
+        <span style="padding:4px 12px;border-radius:3px;font-size:10px;font-weight:700;letter-spacing:0.07em;background:${sc};color:#fff;">${sev.toUpperCase()} SEVERITY</span>
+        <span style="padding:4px 12px;border-radius:3px;font-size:10px;font-weight:700;letter-spacing:0.07em;background:${stc};color:#fff;">${status.toUpperCase()}</span>
       </div>
-      <div>
-        ${m.incident_name ? `<div style="${S_MUTED}margin-bottom:3px;"><span style="color:#4b6a9b;">Incident ID:</span> <span style="color:#94a3b8;font-weight:600;">${m.incident_name}</span></div>` : ''}
-        <div style="${S_MUTED}"><span style="color:#4b6a9b;">Report Date:</span> <span style="color:#94a3b8;font-weight:600;">${date}</span></div>
+
+      <!-- Key metrics — all on navy -->
+      <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:1px;background:#1e3a5f;border:1px solid #1e3a5f;border-radius:4px;overflow:hidden;">
+        ${metrics.map(({ val, label, alert }) => `
+          <div style="background:#0d1e35;padding:12px 14px;">
+            <div style="font-size:${val != null ? '22px' : '11px'};font-weight:700;color:${val != null ? (alert || '#fff') : '#2d4a6b'};line-height:1;font-variant-numeric:tabular-nums;font-style:${val != null ? 'normal' : 'italic'};">
+              ${val != null ? val : 'Not recorded'}
+            </div>
+            <div style="font-size:8px;font-weight:700;color:#4b6a9b;text-transform:uppercase;letter-spacing:0.08em;margin-top:4px;">${label}</div>
+          </div>`).join('')}
       </div>
     </div>
-    <!-- White lower band -->
-    <div style="padding:12mm 18mm 10mm;display:flex;flex-direction:column;justify-content:space-between;">
+
+    <!-- Bottom bar -->
+    <div style="border-top:1px solid #1e3a5f;padding-top:10px;display:flex;justify-content:space-between;align-items:flex-end;">
       <div>
-        ${exec.what_happened ? `<p style="${S_BODY}margin-bottom:14px;border-left:2px solid #dbeafe;padding-left:10px;">${exec.what_happened}</p>` : ''}
-        <div style="display:grid;grid-template-columns:repeat(4,1fr);border:1px solid #e2e8f0;border-radius:3px;overflow:hidden;">
-          ${metricItems.map(([val, label, col], i) => `
-            <div style="padding:9px 11px;${i < 3 ? 'border-right:1px solid #e2e8f0;' : ''}border-top:2px solid ${col || (val != null ? NAVY : '#e2e8f0')};">
-              <div style="font-size:${val != null ? '19px' : '10px'};font-weight:700;color:${val != null ? (col || NAVY) : TXS};font-style:${val != null ? 'normal' : 'italic'};line-height:1;font-variant-numeric:tabular-nums;">${val != null ? val : 'Not recorded'}</div>
-              <div style="${S_LABEL}margin-top:3px;">${label}</div>
-            </div>`).join('')}
-        </div>
+        ${m.incident_name ? `<div style="font-size:9px;color:#4b6a9b;margin-bottom:3px;">Incident ID: <span style="color:#94a3b8;font-weight:600;">${m.incident_name}</span></div>` : ''}
+        <div style="font-size:9px;color:#4b6a9b;">Generated by <span style="color:#94a3b8;font-weight:600;">IRIS · Claude AI</span> — human review required before external disclosure</div>
       </div>
-      <div style="border-top:1px solid #e2e8f0;padding-top:8px;margin-top:12px;display:flex;justify-content:space-between;align-items:flex-end;">
-        <div>
-          <div style="${S_SMALL}font-weight:600;margin-bottom:2px;">IRIS · ${isExec ? 'Executive Brief · ' : ''}Powered by Claude AI</div>
-          <div style="font-size:9px;color:${TXS};">AI-generated from analyst notes — human review required before external disclosure</div>
-        </div>
-        <div style="font-size:9px;font-weight:700;letter-spacing:0.12em;color:${TXS};text-transform:uppercase;">Confidential</div>
-      </div>
+      <div style="font-size:9px;font-weight:700;letter-spacing:0.14em;color:#2d4a6b;text-transform:uppercase;">Confidential</div>
     </div>
+
   </div>`;
 }
 
@@ -607,157 +608,6 @@ function page7(recs, date) {
   <style>.page:last-of-type{page-break-after:avoid!important}</style>`;
 }
 
-// ── Executive Brief — Page 2: Summary ─────────────────────────────────────────
-
-function execPage2(exec, date) {
-  const m         = exec.key_metrics || {};
-  const sev       = m.severity || 'Unknown';
-  const sc        = SEV_COLOR[sev] || '#94a3b8';
-  const dwellAlert = m.dwell_time_hours > 72;
-  const dwellColor = dwellAlert ? '#dc2626' : NAVY;
-  const dwellVal   = m.dwell_time_hours > 0 ? formatHours(m.dwell_time_hours) : 'Not recorded';
-
-  return `
-  <div class="page">
-    ${pageHeader('Executive Summary', `${m.incident_name ? m.incident_name + ' · ' : ''}Executive Brief — Page 2 of 3`, date, 2, 3)}
-
-    <div style="display:flex;align-items:stretch;border-radius:5px;overflow:hidden;margin-bottom:10px;border:1px solid ${sc}33;">
-      <div style="background:${sc};color:#fff;padding:10px 14px;display:flex;flex-direction:column;justify-content:center;align-items:center;min-width:80px;">
-        <div style="${S_LABEL}color:rgba(255,255,255,0.8);margin-bottom:2px;">Severity</div>
-        <div style="font-size:18px;font-weight:800;line-height:1;">${sev.toUpperCase()}</div>
-      </div>
-      <div style="flex:1;padding:10px 14px;">
-        <div style="font-size:13px;font-weight:700;color:${NAVY};line-height:1.4;margin-bottom:4px;">${exec.headline || 'Incident Brief'}</div>
-        <div style="${S_MUTED}">
-          ${m.breach_start   ? `Breach: <strong>${m.breach_start}</strong>` : ''}
-          ${m.detection_date ? `&nbsp;·&nbsp; Detected: <strong>${m.detection_date}</strong>` : ''}
-          ${m.dwell_time_hours > 0 ? `&nbsp;·&nbsp; <span style="color:${dwellColor};font-weight:700;">Undetected for: ${dwellVal}</span>` : ''}
-        </div>
-      </div>
-    </div>
-
-    <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:7px;margin-bottom:10px;">
-      ${metric(m.systems_affected  >= 0 ? m.systems_affected : 'Not recorded', 'Systems Affected')}
-      ${metric(m.records_at_risk   >  0 ? m.records_at_risk.toLocaleString() : 'Not recorded', 'Records at Risk', m.records_at_risk > 0 ? '#dc2626' : null)}
-      ${metric(dwellVal, 'Undetected For', dwellAlert ? '#dc2626' : null)}
-      ${metric(m.estimated_cost_usd > 0 ? '$' + m.estimated_cost_usd.toLocaleString() : 'Not recorded', 'Est. Cost')}
-    </div>
-
-    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px;margin-bottom:10px;">
-      ${exec.detection_method ? `
-        <div style="padding:7px 9px;border-left:2px solid ${TXM};">
-          <div style="${S_LABEL}margin-bottom:2px;">How Detected</div>
-          <div style="${S_SMALL}">${exec.detection_method}</div>
-        </div>` : ''}
-      ${exec.containment_status ? (() => {
-        const cc = exec.containment_status === 'Fully Contained' ? '#15803d' : exec.containment_status === 'Not Contained' ? '#dc2626' : '#92400e';
-        return `
-        <div style="padding:7px 9px;border-left:3px solid ${cc};">
-          <div style="${S_LABEL}color:${cc};margin-bottom:2px;">Containment</div>
-          <div style="font-size:11px;font-weight:800;color:${cc};">${exec.containment_status}</div>
-        </div>`;
-      })() : ''}
-      ${exec.current_owner ? `
-        <div style="padding:7px 9px;border-left:2px solid ${TXM};">
-          <div style="${S_LABEL}margin-bottom:2px;">Current Owner</div>
-          <div style="${S_SMALL}">${exec.current_owner}</div>
-        </div>` : ''}
-    </div>
-
-    <h2>Summary &amp; Status</h2>
-    ${[
-      { q:'What happened',  a: trunc(exec.what_happened, 320) },
-      { q:'What we did',    a: trunc(exec.what_we_did,   260) },
-      { q:'What it means',  a: trunc(exec.what_it_means, 260) },
-      { q:"What's next",    a: trunc(exec.whats_next,    220) },
-    ].map(({ q, a }) => `
-      <div style="margin-bottom:6px;">
-        <div style="${S_LABEL}color:${ACCENT};margin-bottom:2px;">${q}</div>
-        <div style="font-size:10px;line-height:1.5;color:${TX};padding-left:7px;border-left:1px solid #dbeafe;">${a || ''}</div>
-      </div>`).join('')}
-
-    ${pageFooter('Executive Summary', date, 2, 3)}
-  </div>`;
-}
-
-// ── Executive Brief — Page 3: Impact & Priority Actions ───────────────────────
-
-function execPage3(impact, recs, date) {
-  const rr  = impact.reputational_risk || 'Unknown';
-  const rrc = SEV_COLOR[rr] || '#94a3b8';
-
-  const topRecs = [
-    ...(recs.immediate || []).filter(r => r.priority === 'Critical' || r.priority === 'High'),
-    ...(recs.strategic || []).filter(r => r.priority === 'Critical' || r.priority === 'High'),
-  ].slice(0, 4);
-
-  const totalRecs  = [...(recs.immediate || []), ...(recs.strategic || [])].length;
-  const lowerCount = totalRecs - topRecs.length;
-
-  return `
-  <div class="page">
-    ${pageHeader('Impact & Priority Actions', 'Executive Brief — Page 3 of 3', date, 3, 3)}
-
-    <h2>Business Impact</h2>
-    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:9px;margin-bottom:10px;">
-      ${metric(impact.records_exposed > 0 ? impact.records_exposed.toLocaleString() : (impact.records_exposed_note || 'Not recorded'), 'Records Exposed', impact.records_exposed > 0 ? '#dc2626' : null)}
-      ${metric(impact.downtime_hours > 0 ? formatHours(impact.downtime_hours) : 'Not recorded', 'Downtime')}
-      ${metric(impact.financial_cost_estimate || 'Not recorded', 'Financial Cost Est.')}
-    </div>
-
-    <div style="padding:8px 11px;border-left:3px solid #92400e;margin-bottom:10px;">
-      <div style="${S_LABEL}color:#92400e;margin-bottom:3px;">Business Impact</div>
-      <div style="font-size:10px;line-height:1.5;color:${TX};">${trunc(impact.business_impact_narrative, 380) || ''}</div>
-    </div>
-
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px;">
-      <div>
-        ${field('Reputational Risk',     badge(rr, rrc))}
-        ${field('Notification Required', impact.notification_required != null ? (impact.notification_required ? '⚠ Yes — action required' : 'No') : null)}
-        ${field('Notification Deadline', impact.notification_deadline)}
-      </div>
-      <div>
-        ${field('Data Types Affected',    impact.data_types_affected?.join(', '))}
-        ${field('Regulatory Obligations', impact.regulatory_obligations?.join(', '))}
-        ${field('Recovery Status',        impact.recovery_status)}
-      </div>
-    </div>
-
-    <h2 style="color:#dc2626;border-bottom-color:#dc2626;">Priority Actions — Critical &amp; High</h2>
-    ${topRecs.length === 0
-      ? `<p style="${S_BODY}color:${TXS};font-style:italic;">No Critical or High priority actions identified.</p>`
-      : `<div style="display:grid;grid-template-columns:1fr 1fr;gap:7px;">
-          ${topRecs.map(r => {
-            const pc = PRI_COLOR[r.priority] || '#64748b';
-            return `
-              <div style="border-left:3px solid ${pc};border-radius:4px;border:1px solid ${pc}22;border-left-width:3px;padding:7px 10px 7px 11px;">
-                <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px;">
-                  ${badge(r.priority, pc)}
-                  <span style="font-size:9px;color:${TXM};font-weight:600;">${r.owner}</span>
-                </div>
-                <div style="${S_SMALL}font-weight:700;margin-bottom:3px;line-height:1.4;">${trunc(r.finding, 80)}</div>
-                <div style="${S_SMALL}color:${TXM};line-height:1.5;margin-bottom:4px;">${trunc(r.action, 140)}</div>
-                <div style="font-size:9px;color:${TXM};padding-top:4px;border-top:1px solid ${pc}20;">Due: ${r.deadline}</div>
-              </div>`;
-          }).join('')}
-        </div>`}
-
-    ${lowerCount > 0 ? `
-      <div style="margin-top:8px;padding:7px 11px;background:#f8fafc;border:1px solid #e2e8f0;border-radius:4px;${S_SMALL}color:${TXM};">
-        ${lowerCount} additional Medium/Low priority action${lowerCount !== 1 ? 's' : ''} in the full Technical Report.
-      </div>` : ''}
-
-    <div style="margin-top:14px;padding:8px 0;border-top:1px solid #e2e8f0;">
-      <div style="font-size:9px;color:${TXS};line-height:1.6;">
-        <strong style="color:${TXM};">About this brief:</strong> Generated by IRIS from analyst-provided notes using Claude AI.
-        Human review required before external disclosure. Full technical detail, IOCs, and MITRE ATT&amp;CK mapping available in the Technical Report.
-      </div>
-    </div>
-
-    ${pageFooter('Impact & Priority Actions', date, 3, 3)}
-  </div>
-  <style>.page:last-of-type{page-break-after:avoid!important}</style>`;
-}
 
 // ── CSS ────────────────────────────────────────────────────────────────────────
 
@@ -799,11 +649,11 @@ export function openPdfReport({ report, sources }) {
 <html lang="en">
 <head>
   <meta charset="UTF-8"/>
-  <title>IRIS Technical Report — ${exec.key_metrics?.incident_name || 'Incident'} — ${date}</title>
+  <title>IRIS Incident Brief — ${exec.key_metrics?.incident_name || 'Incident'} — ${date}</title>
   <style>${css()}</style>
 </head>
 <body>
-  ${pageCover(exec, snap, date, 'technical')}
+  ${pageCover(exec, snap, date)}
   ${page1(exec, date)}
   ${page2(snap, exec, date)}
   ${page3(tl, date)}
@@ -821,31 +671,3 @@ export function openPdfReport({ report, sources }) {
   win.document.close();
 }
 
-export function openExecutivePdf({ report }) {
-  const date = new Date().toLocaleDateString('en-GB', { day:'numeric', month:'long', year:'numeric' });
-
-  const exec   = report.executive_summary  || {};
-  const snap   = report.incident_snapshot  || {};
-  const impact = report.impact_assessment  || {};
-  const recs   = report.recommendations    || {};
-
-  const html = `<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8"/>
-  <title>IRIS Executive Brief — ${exec.key_metrics?.incident_name || 'Incident'} — ${date}</title>
-  <style>${css()}</style>
-</head>
-<body>
-  ${pageCover(exec, snap, date, 'executive')}
-  ${execPage2(exec, date)}
-  ${execPage3(impact, recs, date)}
-  <script>window.addEventListener('load', () => setTimeout(() => window.print(), 800));</script>
-</body>
-</html>`;
-
-  const win = window.open('', '_blank');
-  if (!win) { alert('Allow pop-ups to export the PDF.'); return; }
-  win.document.write(html);
-  win.document.close();
-}
