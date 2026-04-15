@@ -1,19 +1,10 @@
-<div align="center">
+# IRIS — Incident Response Intelligence Summary
 
-# IRIS
-### Incident Response Intelligence Summary
-
-**Convert raw IR notes into a CISO-ready PDF brief in under 60 seconds.**
-
-[![Python](https://img.shields.io/badge/Python-3.10+-3776AB?style=for-the-badge&logo=python&logoColor=white)](https://python.org)
-[![React](https://img.shields.io/badge/React-19-61DAFB?style=for-the-badge&logo=react&logoColor=black)](https://react.dev)
-[![Vite](https://img.shields.io/badge/Vite-8-646CFF?style=for-the-badge&logo=vite&logoColor=white)](https://vite.dev)
-[![Flask](https://img.shields.io/badge/Flask-3.0-000000?style=for-the-badge&logo=flask&logoColor=white)](https://flask.palletsprojects.com)
-[![Claude](https://img.shields.io/badge/Powered%20by-Claude%20API-D97706?style=for-the-badge)](https://anthropic.com)
-[![macOS](https://img.shields.io/badge/macOS-Apple%20Silicon%20%7C%20Intel-000000?style=for-the-badge&logo=apple&logoColor=white)](https://apple.com)
-[![License](https://img.shields.io/badge/License-Private-red?style=for-the-badge)](./LICENSE)
-
-</div>
+![Status](https://img.shields.io/badge/Status-Production--Ready-success)
+![Stack](https://img.shields.io/badge/Stack-Python%20%2B%20React-blue)
+![AI](https://img.shields.io/badge/AI-Claude%20API-orange)
+![Platform](https://img.shields.io/badge/Platform-macOS-lightgrey)
+![License](https://img.shields.io/badge/License-Private-red)
 
 ---
 
@@ -268,6 +259,4 @@ Private — not for redistribution.
 
 ---
 
-<div align="center">
-  <sub>Built with the Claude API · Follows CrowdStrike, Mandiant, and Unit 42 reporting standards</sub>
-</div>
+*Built with the Claude API · Follows CrowdStrike, Mandiant, and Unit 42 reporting standards*
