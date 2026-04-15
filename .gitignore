@@ -1,0 +1,19 @@
+# Environment / secrets
+backend/.env
+
+# Python
+backend/venv/
+backend/__pycache__/
+backend/lib/__pycache__/
+**/__pycache__/
+*.pyc
+*.pyo
+
+# Node
+frontend/node_modules/
+
+# macOS
+.DS_Store
+
+# Cache
+~/.iris_cache/

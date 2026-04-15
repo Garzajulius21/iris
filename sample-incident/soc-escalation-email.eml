@@ -1,0 +1,80 @@
+From: SOC Operations <soc@meridian-logistics.com>
+To: CISO <ciso@meridian-logistics.com>; IT Security Lead <security-lead@meridian-logistics.com>
+Cc: Legal <legal@meridian-logistics.com>; HR Director <hr-director@meridian-logistics.com>
+Subject: [INCIDENT IR-2026-0041] Active BEC — Account Compromise + Data Exfil — MERIDIAN LOGISTICS
+Date: Tue, 11 Mar 2026 11:05:22 +0000
+Message-ID: <soc-ir-2026-0041-open@meridian-logistics.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+
+INCIDENT NOTIFICATION — MERIDIAN LOGISTICS INTERNAL
+Classification: CONFIDENTIAL — RESTRICTED TO LISTED RECIPIENTS
+
+Incident Reference: IR-2026-0041
+Opened: 2026-03-11 11:05 UTC
+Severity: HIGH
+Status: ACTIVE — CONTAINMENT IN PROGRESS
+
+---
+
+SITUATION SUMMARY
+
+At approximately 09:12 UTC today, finance user k.thornton fell victim to a
+credential phishing attack via a spoofed DocuSign email. The attacker used the
+harvested credentials to access k.thornton's O365 account, bypassing MFA via
+a legacy auth exemption that was still active on the account.
+
+Between 09:22 and 09:26 UTC, the attacker downloaded approximately 40MB of
+data from SharePoint (Finance forecasts, HR compensation data, vendor contracts)
+and set up an inbox forwarding rule to an external Proton Mail address.
+
+The attacker then sent wire transfer requests from k.thornton's account to
+accounts payable contacts, requesting $47,500 to an external bank account.
+The wire has NOT been processed — AP clerk p.osei identified the request as
+suspicious and contacted k.thornton directly.
+
+Account was disabled and session revoked at 10:58 UTC. Containment is holding.
+No lateral movement detected at this time.
+
+---
+
+IMMEDIATE ACTIONS TAKEN
+
+- k.thornton account session revoked and account disabled (10:58 UTC)
+- Inbox forwarding rule deleted (11:05 UTC)
+- Wire transfer request cancelled — confirmed with Finance (11:15 UTC)
+- MFA enforced on k.thornton retroactively
+- IT reviewing all other legacy auth exemptions (4 additional accounts identified)
+
+---
+
+OPEN RISK ITEMS
+
+1. DATA EXFILTRATION: ~40MB of sensitive data (finance, HR, vendor) confirmed
+   downloaded. Contents include EU employee salary data — GDPR assessment required.
+   Legal has been notified. 72-hour GDPR clock starts from 13:00 UTC today.
+
+2. EMAIL FORWARDING: 3 emails confirmed forwarded to external address before
+   rule was deleted. Contents: HR internal thread, vendor invoice, client email.
+
+3. LEGACY AUTH EXPOSURE: 4 additional accounts with legacy auth exemptions
+   identified. None compromised but all at elevated risk. Remediation in progress.
+
+4. WIRE FRAUD: $47,500 wire request sent to AP. Payment blocked. No financial
+   loss at this time — monitoring for further attempts.
+
+---
+
+CISO ACTION REQUIRED
+
+Please confirm receipt and approve external notification to ICO (GDPR Art. 33).
+Legal has drafted the notification — see attached (separate email).
+Deadline: 2026-03-14 13:00 UTC (72 hours from incident detection).
+
+SOC Lead will send next update at 14:00 UTC today.
+
+---
+
+SOC Operations
+Meridian Logistics Group
+soc@meridian-logistics.com | +44 20 7946 0124

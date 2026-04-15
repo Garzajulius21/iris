@@ -1,0 +1,129 @@
+INCIDENT INVESTIGATION NOTES
+Analyst: M. Reyes
+Case: IR-2026-0041
+Classification: CONFIDENTIAL
+
+---
+
+DAY 0 — 2026-03-11
+
+09:12 UTC — Finance user k.thornton@meridian-logistics.com clicked link in email
+            purporting to be from DocuSign. Email originated from docusign-secure[.]info
+            (not the legitimate docusign.com domain).
+
+09:14 UTC — Browser redirected through two hops:
+              1. docusign-secure[.]info/verify
+              2. credential-harvester[.]ru/meridian
+            User entered O365 credentials. Page then showed a fake "session expired" error.
+
+09:18 UTC — Attacker logged into k.thornton's O365 account from IP 185.220.101.47
+            (Tor exit node, AS tor-exit). MFA was not enforced on this account — legacy
+            auth exemption was still active.
+
+09:22 UTC — Attacker accessed SharePoint. Downloaded 3 folders:
+              - Finance/Q4-2025-Forecasts (14 files, ~8MB)
+              - HR/Compensation-Bands-2026 (3 files, ~1.2MB)
+              - Ops/Vendor-Contracts (22 files, ~31MB)
+            Total exfiltration: ~40MB over ~4 minutes.
+
+09:26 UTC — Attacker set up inbox rule: forward all incoming mail to
+            meridian-logistics-backup@proton.me
+            Rule name: "Archive-Rule-Auto" (designed to blend in).
+
+09:31 UTC — Attacker sent 6 internal emails from k.thornton's account to
+            AP contacts requesting urgent wire transfer ($47,500 to
+            account ending 8821, routing 021000021).
+            Email subject: "URGENT — Vendor Payment — Approve Before EOD"
+
+10:44 UTC — AP clerk p.osei@meridian-logistics.com flagged the wire request
+            as unusual and called k.thornton directly. k.thornton had no
+            knowledge of the request.
+
+10:51 UTC — p.osei escalated to IT helpdesk (ticket #HD-29341).
+
+10:58 UTC — IT helpdesk revoked k.thornton's session tokens and disabled
+            the account. MFA enforced retroactively.
+
+11:05 UTC — SOC lead notified. Incident IR-2026-0041 opened.
+
+---
+
+DAY 0 — INVESTIGATION
+
+11:20 UTC — Pulled O365 audit logs. Confirmed single-session attacker activity
+            from 185.220.101.47. No lateral movement detected in identity logs
+            at this stage.
+
+11:45 UTC — Confirmed inbox forward rule deleted. Checked whether any mail was
+            actually forwarded — O365 message trace shows 3 emails forwarded
+            between 09:26–10:51 UTC (internal HR thread, vendor invoice thread,
+            one external client thread). Contents potentially sensitive.
+
+12:10 UTC — Finance confirmed wire did NOT go through — bank hold on unusual
+            outbound transfer saved the payment. Wire request cancelled.
+
+12:30 UTC — Checked all other accounts for similar inbox rules or legacy auth
+            exemptions. Found 4 other accounts with legacy auth exemptions:
+              - b.kaur@meridian-logistics.com (IT admin)
+              - j.ferreira@meridian-logistics.com (Finance)
+              - d.okafor@meridian-logistics.com (HR)
+              - svc-reporting@meridian-logistics.com (service account)
+            None show signs of compromise at this time. Enforcing MFA immediately.
+
+13:00 UTC — Notified legal and HR. GDPR assessment begun (EU employee data in
+            HR/Compensation-Bands-2026 document). 72-hour GDPR notification
+            window starts now.
+
+14:20 UTC — Threat intel: IP 185.220.101.47 previously used in BEC campaigns
+            targeting logistics sector (Q3 2025, per CISA advisory AA25-220A).
+            Likely FIN7 or affiliated group based on TTPs.
+
+---
+
+DAY 1 — 2026-03-12
+
+09:00 UTC — Follow-up: confirmed no further attacker activity on any account.
+            Containment holding.
+
+09:30 UTC — SharePoint permissions audit completed. No additional data access
+            detected beyond the 09:22 exfiltration window.
+
+10:00 UTC — Password reset sent to all 4 legacy-auth accounts.
+            MFA enforcement completed org-wide (previously 87% coverage,
+            now 100%).
+
+11:00 UTC — Legal confirmed GDPR notification required. Filing with ICO
+            by 2026-03-14 13:00 UTC deadline.
+
+14:00 UTC — Phishing email submitted to Microsoft for domain takedown.
+            docusign-secure[.]info now showing 0 DNS resolution (likely
+            already abandoned by attacker).
+
+---
+
+SUMMARY — ANALYST ASSESSMENT
+
+Root cause: Successful credential phishing via spoofed DocuSign email.
+            Legacy auth MFA exemption allowed attacker to bypass MFA.
+
+Impact confirmed:
+  - 1 account compromised (k.thornton)
+  - ~40MB data exfiltrated (finance, HR, vendor contracts)
+  - 3 emails forwarded to external address (contents: sensitive internal data)
+  - Wire fraud attempted: $47,500. Payment blocked by bank hold.
+  - GDPR notification required (EU employee compensation data accessed)
+
+Impact avoided:
+  - Wire transfer blocked ($47,500 saved)
+  - No lateral movement confirmed
+  - No ransomware deployment
+
+Dwell time: ~1 hour 39 minutes (09:12 initial access → 10:51 internal escalation → 10:58 containment)
+
+Estimated cost: Legal fees + notification ~$15,000–$25,000. Wire fraud avoided = $47,500 saved.
+
+Open items:
+  - ICO notification by 2026-03-14 13:00 UTC
+  - Phishing awareness training for all finance/AP staff
+  - Legacy auth exemption process review
+  - Email security gateway rule for lookalike domains
