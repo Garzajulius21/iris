@@ -605,6 +605,7 @@ function page7(recs, date) {
     ${pageFooter('Recommendations', date, 7, 7)}
   </div>
   <style>.page:last-of-type{page-break-after:avoid!important}</style>`;
+}
 
 // ── Executive Brief — Page 2: Summary ─────────────────────────────────────────
 
