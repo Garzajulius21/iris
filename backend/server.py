@@ -5,18 +5,27 @@ and report assembly for the CISO-facing PDF brief.
 """
 
 import os
+import io
 import json
+import base64
+import zipfile
+import anthropic
 from flask import Flask, request, jsonify, Response, stream_with_context
 from flask_cors import CORS
 from dotenv import load_dotenv
 
 load_dotenv()
 
-from lib.ingest import parse_text, parse_csv, parse_eml, parse_docx, combine_inputs
+from lib.ingest import (
+    parse_text, combine_inputs,
+    parse_file_by_extension, IMAGE_EXTENSIONS, IMAGE_MIME
+)
 from lib.extract import extract_section, SECTION_NAMES
 
 app = Flask(__name__)
 CORS(app, origins=['http://localhost:5175', 'http://127.0.0.1:5175'])
+
+_client = anthropic.Anthropic(api_key=os.getenv('ANTHROPIC_API_KEY'))
 
 # In-memory session
 _session = {
@@ -26,17 +35,106 @@ _session = {
 }
 
 
+# ── Image vision analysis ─────────────────────────────────────────────────────
+
+def analyze_image(content: bytes, filename: str) -> str:
+    """
+    Send an image to Claude vision and extract all security-relevant
+    information visible in the screenshot as structured text notes.
+    """
+    ext = filename.rsplit('.', 1)[-1].lower() if '.' in filename else 'png'
+    mime = IMAGE_MIME.get(ext, 'image/png')
+    image_data = base64.standard_b64encode(content).decode('utf-8')
+
+    response = _client.messages.create(
+        model=os.getenv('IRIS_MODEL', 'claude-opus-4-6'),
+        max_tokens=1500,
+        messages=[{
+            'role': 'user',
+            'content': [
+                {
+                    'type': 'image',
+                    'source': {
+                        'type': 'base64',
+                        'media_type': mime,
+                        'data': image_data,
+                    }
+                },
+                {
+                    'type': 'text',
+                    'text': (
+                        'You are an IR analyst reviewing a screenshot from a cybersecurity investigation. '
+                        'Extract and describe ALL visible information relevant to an incident report. '
+                        'Include: alert names, log entries, timestamps, IP addresses, hostnames, '
+                        'usernames, file paths, process names, error messages, SIEM detections, '
+                        'EDR alerts, dashboard metrics, email content, command output, or any other '
+                        'security-relevant data. Be thorough and specific. '
+                        'Format your response as structured analyst notes.'
+                    )
+                }
+            ]
+        }]
+    )
+
+    description = response.content[0].text
+    return f'[Screenshot analysis: {filename}]\n\n{description}'
+
+
+# ── ZIP extraction ────────────────────────────────────────────────────────────
+
+def process_zip(content: bytes, zip_filename: str) -> list[dict]:
+    """
+    Extract a ZIP archive and parse each file inside.
+    Returns a list of {'label': str, 'text': str} source dicts,
+    and a separate list of image dicts for vision processing.
+    """
+    text_sources = []
+    image_files = []
+
+    try:
+        with zipfile.ZipFile(io.BytesIO(content)) as zf:
+            for name in zf.namelist():
+                # Skip macOS metadata and hidden files
+                if name.startswith('__MACOSX') or name.startswith('.'):
+                    continue
+                if name.endswith('/'):
+                    continue  # directory entry
+
+                file_content = zf.read(name)
+                short_name = name.split('/')[-1]  # strip any subfolder path
+                ext = short_name.rsplit('.', 1)[-1].lower() if '.' in short_name else ''
+
+                if ext in IMAGE_EXTENSIONS:
+                    image_files.append({'content': file_content, 'filename': short_name})
+                else:
+                    text = parse_file_by_extension(file_content, short_name)
+                    if text and text.strip():
+                        text_sources.append({
+                            'label': f'{zip_filename} → {short_name}',
+                            'text': text
+                        })
+    except zipfile.BadZipFile:
+        pass  # Silently skip corrupt archives
+
+    return text_sources, image_files
+
+
 # ── Ingest ────────────────────────────────────────────────────────────────────
 
 @app.route('/api/ingest', methods=['POST'])
 def ingest():
     """
     Accepts multipart/form-data with:
-      - files[]: one or more uploaded files (TXT, CSV, EML)
+      - files[]: one or more uploaded files
       - paste: plain-text content (optional)
-    Returns the combined raw notes and a preview.
+
+    Supported file types:
+      TXT, CSV, EML, DOCX, PDF, PPTX, XLSX, HTML, JSON,
+      PNG, JPG, JPEG, GIF, WEBP (via Claude vision),
+      ZIP (extracted and parsed recursively)
     """
     sources = []
+    image_queue = []  # {'content': bytes, 'filename': str}
 
     paste = request.form.get('paste', '').strip()
     if paste:
@@ -48,18 +146,29 @@ def ingest():
         content = f.read()
         ext = filename.rsplit('.', 1)[-1].lower() if '.' in filename else ''
 
-        if ext == 'csv':
-            text = parse_csv(content.decode('utf-8', errors='replace'), filename)
-        elif ext == 'eml':
-            text = parse_eml(content, filename)
-        elif ext == 'docx':
-            text = parse_docx(content, filename)
-        else:
-            # TXT or unknown — treat as plain text
-            text = parse_text(content.decode('utf-8', errors='replace'))
+        if ext == 'zip':
+            text_sources, image_files = process_zip(content, filename)
+            sources.extend(text_sources)
+            image_queue.extend(image_files)
 
-        if text:
-            sources.append({'label': filename or 'Uploaded file', 'text': text})
+        elif ext in IMAGE_EXTENSIONS:
+            image_queue.append({'content': content, 'filename': filename})
+
+        else:
+            text = parse_file_by_extension(content, filename)
+            if text and text.strip():
+                sources.append({'label': filename or 'Uploaded file', 'text': text})
+
+    # Run vision analysis on all images
+    for img in image_queue:
+        try:
+            description = analyze_image(img['content'], img['filename'])
+            sources.append({'label': img['filename'], 'text': description})
+        except Exception as e:
+            sources.append({
+                'label': img['filename'],
+                'text': f'[Image could not be analyzed: {e}]'
+            })
 
     if not sources:
         return jsonify({'error': 'No content provided. Upload files or paste notes.'}), 400
@@ -100,7 +209,6 @@ def process():
         report = {}
         errors = {}
         for section in SECTION_NAMES:
-            # Check cache without making API call
             from lib import cache as _cache
             key = _cache.cache_key(section, raw_notes)
             is_cached = _cache.load(key) is not None
@@ -119,9 +227,6 @@ def process():
                 yield _sse('progress', {'section': section, 'status': 'error'})
 
         _session['report'] = report
-        # Always emit complete so the client can close the stream cleanly.
-        # If all sections errored, report will be empty and the client
-        # will surface the per-section error messages instead.
         yield _sse('complete', {'report': report, 'errors': errors})
 
     return Response(stream_with_context(generate()), mimetype='text/event-stream',

@@ -1,6 +1,12 @@
 import { useState, useRef } from 'react';
 
-const ACCEPTED = ['.txt', '.csv', '.eml', '.docx'];
+const ACCEPTED = [
+  '.txt', '.csv', '.eml', '.docx',
+  '.pdf', '.pptx', '.xlsx',
+  '.html', '.htm', '.json',
+  '.png', '.jpg', '.jpeg', '.gif', '.webp',
+  '.zip',
+];
 
 export default function UploadZone({ onIngest, loading }) {
   const [paste, setPaste]     = useState('');
@@ -65,7 +71,7 @@ export default function UploadZone({ onIngest, loading }) {
       </div>
 
       <div className="card">
-        <div className="card-title">Upload Files <span style={{color:'#94a3b8',fontWeight:400,textTransform:'none',letterSpacing:0}}>— TXT, CSV, EML, DOCX</span></div>
+        <div className="card-title">Upload Files <span style={{color:'#94a3b8',fontWeight:400,textTransform:'none',letterSpacing:0}}>— Any investigation file</span></div>
 
         {/* Drop zone */}
         <div
@@ -89,7 +95,10 @@ export default function UploadZone({ onIngest, loading }) {
             Drag &amp; drop files here, or <span style={{color:'var(--accent)',fontWeight:600}}>click to browse</span>
           </div>
           <div style={{fontSize: 11, color: '#94a3b8', marginTop: 4}}>
-            Supported: .txt · .csv · .eml · .docx
+            .txt · .csv · .eml · .docx · .pdf · .pptx · .xlsx · .json · .html · .zip
+          </div>
+          <div style={{fontSize: 11, color: '#94a3b8', marginTop: 2}}>
+            Screenshots &amp; images: .png · .jpg · .webp · .gif (analyzed via Claude vision)
           </div>
           <input
             ref={fileInput}
@@ -112,7 +121,9 @@ export default function UploadZone({ onIngest, loading }) {
                 borderRadius: 5,
                 fontSize: 12,
               }}>
-                <span style={{color:'#0369a1', fontWeight:500}}>📄 {f.name}</span>
+                <span style={{color:'#0369a1', fontWeight:500}}>
+                  {/\.(png|jpg|jpeg|gif|webp)$/i.test(f.name) ? '🖼️' : '📄'} {f.name}
+                </span>
                 <span style={{color:'#64748b', fontSize:11}}>
                   {(f.size / 1024).toFixed(1)} KB
                   <button
