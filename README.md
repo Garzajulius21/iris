@@ -30,7 +30,7 @@ Each run produces a 7-section PDF brief:
 | 2 | **Incident Snapshot** | Who/What/Where/Why/How grid, key metrics, detection & containment status |
 | 3 | **Attack Timeline** | Chronological event table — confirmed ✓ vs. suspected ? |
 | 4 | **Technical Analysis** | Phase-by-phase breakdown: Initial Access → Execution → Persistence → Lateral Movement → Exfiltration |
-| 5 | **IOC Summary** | IPs, domains, hashes, usernames, file paths in structured tables |
+| 5 | **IOC Summary** | Dedicated tab — IPs, domains, hashes, accounts, file paths with one-click Copy All for blocklisting |
 | 6 | **Impact Assessment** | Systems affected, data involved, business disruption, regulatory exposure |
 | 7 | **Recommendations** | Immediate (0–30 day) and strategic (30–90 day) actions assigned to functional teams |
 
