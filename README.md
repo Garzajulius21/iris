@@ -1,10 +1,12 @@
 # IRIS — Incident Response Intelligence Summary
 
-![Status](https://img.shields.io/badge/Status-Production--Ready-success)
-![Stack](https://img.shields.io/badge/Stack-Python%20%2B%20React-blue)
-![AI](https://img.shields.io/badge/AI-Claude%20API-orange)
-![Platform](https://img.shields.io/badge/Platform-macOS-lightgrey)
-![License](https://img.shields.io/badge/License-Private-red)
+![Status](https://img.shields.io/badge/Status-Production--Ready-success?style=for-the-badge)
+![Stack](https://img.shields.io/badge/Stack-Python%20%2B%20React-blue?style=for-the-badge)
+![AI](https://img.shields.io/badge/AI-Claude%20API-orange?style=for-the-badge)
+![Input](https://img.shields.io/badge/Input-TXT%20%7C%20CSV%20%7C%20EML%20%7C%20DOCX-blueviolet?style=for-the-badge)
+![Output](https://img.shields.io/badge/Output-7--Page%20CISO%20Brief-informational?style=for-the-badge)
+![Platform](https://img.shields.io/badge/Platform-macOS-lightgrey?style=for-the-badge)
+![License](https://img.shields.io/badge/License-Private-red?style=for-the-badge)
 
 ---
 
