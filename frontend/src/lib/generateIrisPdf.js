@@ -90,7 +90,7 @@ function pageHeader(title, subtitle, date, pageNum, totalPages) {
       <div>
         <div style="font-size:18px;font-weight:800;letter-spacing:-0.5px;color:${NAVY};line-height:1;">IRIS</div>
         <div style="${S_SMALL}color:${TXM};margin-top:2px;">${title}</div>
-        ${subtitle ? `<div style="font-size:9px;color:${TXS};margin-top:1px;">${subtitle}</div>` : ''}
+        ${subtitle ? `<div style="font-size:8px;color:${TXS};margin-top:2px;font-style:italic;">${subtitle}</div>` : ''}
       </div>
       <div style="text-align:right;">
         <div style="${S_SMALL}font-weight:500;">${date}</div>
@@ -170,7 +170,7 @@ function pageCover(exec, snap, date) {
 
 // ── Page 1: Executive Summary (Technical Report) ───────────────────────────────
 
-function page1(exec, date) {
+function page1(exec, snap, date) {
   const m         = exec.key_metrics || {};
   const sev       = m.severity || 'Unknown';
   const sc        = SEV_COLOR[sev] || '#94a3b8';
@@ -221,26 +221,31 @@ function page1(exec, date) {
         </div>`).join('')}
     </div>` : ''}
 
+    ${(() => {
+      const detMethod   = exec.detection_method   || snap.detection_method;
+      const contStatus  = exec.containment_status || snap.current_status;
+      const owner       = exec.current_owner      || snap.handoff_status;
+      if (!detMethod && !contStatus && !owner) return '';
+      const cc = contStatus === 'Fully Contained' ? '#15803d' : contStatus === 'Not Contained' ? '#dc2626' : contStatus === 'Unknown' ? TXM : '#92400e';
+      return `
     <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px;margin-bottom:12px;">
-      ${exec.detection_method ? `
+      ${detMethod ? `
         <div style="padding:8px 10px;border-left:2px solid ${TXM};">
-          <div style="${S_LABEL}margin-bottom:2px;">How Detected</div>
-          <div style="${S_SMALL}">${exec.detection_method}</div>
-        </div>` : ''}
-      ${exec.containment_status ? (() => {
-        const cc = exec.containment_status === 'Fully Contained' ? '#15803d' : exec.containment_status === 'Not Contained' ? '#dc2626' : '#92400e';
-        return `
+          <div style="${S_LABEL}margin-bottom:3px;">How Detected</div>
+          <div style="${S_SMALL}">${detMethod}</div>
+        </div>` : '<div></div>'}
+      ${contStatus ? `
         <div style="padding:8px 10px;border-left:3px solid ${cc};">
-          <div style="${S_LABEL}color:${cc};margin-bottom:2px;">Containment Status</div>
-          <div style="font-size:11px;font-weight:800;color:${cc};">${exec.containment_status}</div>
-        </div>`;
-      })() : ''}
-      ${exec.current_owner ? `
+          <div style="${S_LABEL}color:${cc};margin-bottom:3px;">Containment</div>
+          <div style="font-size:12px;font-weight:800;color:${cc};">${contStatus}</div>
+        </div>` : '<div></div>'}
+      ${owner ? `
         <div style="padding:8px 10px;border-left:2px solid ${TXM};">
-          <div style="${S_LABEL}margin-bottom:2px;">Current Owner / Handoff</div>
-          <div style="${S_SMALL}">${exec.current_owner}</div>
+          <div style="${S_LABEL}margin-bottom:3px;">Current Owner / Handoff</div>
+          <div style="${S_SMALL}">${owner}</div>
         </div>` : ''}
-    </div>
+    </div>`;
+    })()}
 
     <h2>Summary &amp; Status</h2>
     ${[
@@ -516,7 +521,7 @@ function page6(impact, date) {
 
   return `
   <div class="page">
-    ${pageHeader('Impact Assessment', 'Business language only — for CISO and board reporting', date, 6, 7)}
+    ${pageHeader('Impact Assessment', 'Business language — for CISO and board reporting', date, 6, 7)}
 
     <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:14px;">
       ${metric(impact.records_exposed > 0 ? impact.records_exposed.toLocaleString() : (impact.records_exposed_note || 'Not recorded'), 'Records Exposed', impact.records_exposed > 0 ? '#dc2626' : null)}
@@ -666,7 +671,7 @@ export function openPdfReport({ report, sources }) {
   <style>${css()}</style>
 </head>
 <body>
-  ${page1(exec, date)}
+  ${page1(exec, snap, date)}
   ${page2(snap, exec, date)}
   ${page3(tl, date)}
   ${page4(tech, date)}
