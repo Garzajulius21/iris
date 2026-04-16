@@ -64,10 +64,16 @@ function badge(text, color) {
 function metric(value, label, alertColor) {
   const col   = alertColor || NAVY;
   const empty = !value || value === 'Not recorded';
+  const isLong = !empty && String(value).length > 20;
+  const valStyle = empty
+    ? `font-size:10px;font-weight:400;color:${TXS};font-style:italic;line-height:1.4;`
+    : isLong
+      ? `font-size:10px;font-weight:600;color:${col};line-height:1.4;`
+      : `font-size:22px;font-weight:700;color:${col};line-height:1;font-variant-numeric:tabular-nums;`;
   return `
     <div style="padding:10px 12px;border-left:3px solid ${empty ? '#e2e8f0' : col};border-bottom:1px solid #f1f5f9;">
-      <div style="font-size:22px;font-weight:700;color:${empty ? TXS : col};line-height:1;font-variant-numeric:tabular-nums;font-style:${empty ? 'italic' : 'normal'};${empty ? 'font-size:11px;' : ''}">${empty ? 'Not recorded' : value}</div>
-      <div style="${S_LABEL}margin-top:3px;">${label}</div>
+      <div style="${valStyle}">${empty ? 'Not recorded' : value}</div>
+      <div style="${S_LABEL}margin-top:4px;">${label}</div>
     </div>`;
 }
 
@@ -228,20 +234,20 @@ function page1(exec, snap, date) {
       if (!detMethod && !contStatus && !owner) return '';
       const cc = contStatus === 'Fully Contained' ? '#15803d' : contStatus === 'Not Contained' ? '#dc2626' : contStatus === 'Unknown' ? TXM : '#92400e';
       return `
-    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px;margin-bottom:12px;">
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:12px;">
       ${detMethod ? `
-        <div style="padding:8px 10px;border-left:2px solid ${TXM};">
-          <div style="${S_LABEL}margin-bottom:3px;">How Detected</div>
+        <div style="padding:9px 11px;background:#f0fdf4;border:1px solid #bbf7d0;border-radius:4px;">
+          <div style="${S_LABEL}color:#15803d;margin-bottom:4px;">How Detected</div>
           <div style="${S_SMALL}">${detMethod}</div>
         </div>` : '<div></div>'}
       ${contStatus ? `
-        <div style="padding:8px 10px;border-left:3px solid ${cc};">
-          <div style="${S_LABEL}color:${cc};margin-bottom:3px;">Containment</div>
+        <div style="padding:9px 11px;background:#eff6ff;border:1px solid #bfdbfe;border-radius:4px;">
+          <div style="${S_LABEL}color:#1d4ed8;margin-bottom:4px;">Containment</div>
           <div style="font-size:12px;font-weight:800;color:${cc};">${contStatus}</div>
         </div>` : '<div></div>'}
       ${owner ? `
-        <div style="padding:8px 10px;border-left:2px solid ${TXM};">
-          <div style="${S_LABEL}margin-bottom:3px;">Current Owner / Handoff</div>
+        <div style="padding:9px 11px;background:#f8fafc;border:1px solid #e2e8f0;border-radius:4px;">
+          <div style="${S_LABEL}margin-bottom:4px;">Current Owner / Handoff</div>
           <div style="${S_SMALL}">${owner}</div>
         </div>` : ''}
     </div>`;
@@ -254,9 +260,9 @@ function page1(exec, snap, date) {
       { q:'What it means',  a: exec.what_it_means },
       { q:"What's next",    a: exec.whats_next },
     ].map(({ q, a }) => `
-      <div style="margin-bottom:8px;">
+      <div style="margin-bottom:9px;page-break-inside:avoid;break-inside:avoid;">
         <div style="${S_LABEL}color:${ACCENT};margin-bottom:3px;">${q}</div>
-        <div style="${S_BODY}padding-left:8px;border-left:1px solid #dbeafe;">${a || ''}</div>
+        <div style="${S_BODY}padding-left:8px;border-left:2px solid #dbeafe;">${a || ''}</div>
       </div>`).join('')}
 
     ${pageFooter('Executive Summary', date, 1, 7)}
