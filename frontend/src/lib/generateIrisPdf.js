@@ -552,46 +552,59 @@ function page6(impact, date) {
 // ── Page 7: Recommendations ───────────────────────────────────────────────────
 
 function page7(recs, date) {
-  function recCards(items) {
+  function recTable(items) {
     if (!items?.length) return `<p style="${S_BODY}color:${TXS};font-style:italic;">None identified.</p>`;
-    return `<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">` +
-      items.map(r => {
-        const pc = PRI_COLOR[r.priority] || '#64748b';
-        return `
-          <div style="border-left:3px solid ${pc};border-radius:4px;border:1px solid ${pc}22;border-left-width:3px;padding:7px 10px 7px 11px;">
-            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px;">
-              ${badge(r.priority, pc)}
-              <span style="font-size:9px;color:${TXM};font-weight:600;">${r.owner}</span>
-            </div>
-            <div style="${S_SMALL}font-weight:700;margin-bottom:3px;line-height:1.4;">${r.finding}</div>
-            <div style="${S_SMALL}color:${TXM};line-height:1.5;margin-bottom:4px;">${r.action}</div>
-            <div style="display:flex;justify-content:space-between;align-items:center;padding-top:4px;border-top:1px solid ${pc}20;">
-              <span style="font-size:9px;color:${TXM};">Due: ${r.deadline}</span>
-              ${r.risk ? `<span style="font-size:9px;color:${TXS};font-style:italic;max-width:55%;text-align:right;">Risk: ${r.risk}</span>` : ''}
-            </div>
-          </div>`;
-      }).join('') + `</div>`;
+    return `
+      <table>
+        <thead>
+          <tr>
+            <th style="width:68px;">Priority</th>
+            <th style="width:28%;">Finding</th>
+            <th>Recommended Action</th>
+            <th style="width:100px;">Owner</th>
+            <th style="width:80px;">Deadline</th>
+          </tr>
+        </thead>
+        <tbody>
+          ${items.map(r => {
+            const pc = PRI_COLOR[r.priority] || '#64748b';
+            return `
+              <tr>
+                <td style="vertical-align:middle;">
+                  <span style="display:inline-block;padding:2px 6px;border-radius:3px;font-size:9px;font-weight:700;background:${pc}18;color:${pc};border:1px solid ${pc}44;">${r.priority || '—'}</span>
+                </td>
+                <td style="${S_SMALL}font-weight:600;line-height:1.5;">${r.finding || '—'}</td>
+                <td style="${S_SMALL}color:${TXM};line-height:1.5;">${r.action || '—'}</td>
+                <td style="${S_SMALL}font-weight:600;color:${NAVY};">${r.owner || '—'}</td>
+                <td style="${S_SMALL}color:${TXM};">${r.deadline || '—'}</td>
+              </tr>`;
+          }).join('')}
+        </tbody>
+      </table>`;
   }
 
   return `
   <div class="page">
-    ${pageHeader('Recommendations', 'Actions assigned to responsible teams — not directives to leadership', date, 7, 7)}
+    ${pageHeader('Recommendations', 'Findings surfaced for CISO awareness — assigned to functional teams', date, 7, 7)}
 
-    <h2 style="color:#dc2626;border-bottom-color:#dc2626;">Immediate Actions — 0 to 30 Days</h2>
-    ${recCards(recs.immediate)}
+    <h2 style="color:#dc2626;border-bottom-color:#dc2626;">Immediate — 0 to 30 Days</h2>
+    ${recTable(recs.immediate)}
 
-    <h2 style="margin-top:12px;color:${ACCENT};border-bottom-color:${ACCENT};">Strategic Actions — 30 to 90 Days</h2>
-    ${recCards(recs.strategic)}
+    <h2 style="margin-top:14px;color:${ACCENT};border-bottom-color:${ACCENT};">Strategic — 30 to 90 Days</h2>
+    ${recTable(recs.strategic)}
 
     ${recs.lessons_learned?.length ? `
-      <h2 style="margin-top:12px;color:${NAVY};">Lessons Learned</h2>
-      <div style="display:flex;flex-direction:column;gap:4px;">
-        ${recs.lessons_learned.map(l => `
-          <div style="border-left:2px solid ${NAVY};padding:5px 9px;">
-            <div style="${S_SMALL}font-weight:600;line-height:1.5;">${l.lesson}</div>
-            ${l.applies_to ? `<div style="font-size:9px;color:${TXM};text-transform:uppercase;letter-spacing:0.05em;margin-top:1px;">${l.applies_to}</div>` : ''}
-          </div>`).join('')}
-      </div>` : ''}
+      <h2 style="margin-top:14px;">Lessons Learned</h2>
+      <table>
+        <thead><tr><th>Lesson</th><th style="width:120px;">Applies To</th></tr></thead>
+        <tbody>
+          ${recs.lessons_learned.map(l => `
+            <tr>
+              <td style="${S_SMALL}line-height:1.5;">${l.lesson}</td>
+              <td style="${S_SMALL}color:${TXM};">${l.applies_to || ''}</td>
+            </tr>`).join('')}
+        </tbody>
+      </table>` : ''}
 
     <div style="margin-top:16px;padding:10px 0;border-top:1px solid #e2e8f0;">
       <div style="${S_LABEL}margin-bottom:5px;">About This Report</div>
@@ -615,19 +628,19 @@ function css() {
   return `
     @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
     *, *::before, *::after { box-sizing:border-box; margin:0; padding:0; }
-    body { font-family:'Inter',-apple-system,sans-serif; font-size:11px; color:#1e293b; background:#fff; line-height:1.6; }
+    body { font-family:'Inter',-apple-system,sans-serif; font-size:11px; color:#1e293b; background:#fff; line-height:1.6; orphans:4; widows:4; }
     .page { width:210mm; padding:11mm 14mm 10mm; margin:0 auto; page-break-after:always; }
-    .page-cover { width:210mm; min-height:297mm; margin:0 auto; page-break-after:always; display:flex; flex-direction:column; }
     .page:last-child, .page:last-of-type { page-break-after:avoid; }
-    h2 { font-size:9px; font-weight:700; color:${NAVY}; border-bottom:2px solid ${NAVY}; padding-bottom:3px; margin:10px 0 7px; text-transform:uppercase; letter-spacing:0.08em; }
+    h2 { font-size:9px; font-weight:700; color:${NAVY}; border-bottom:2px solid ${NAVY}; padding-bottom:3px; margin:10px 0 7px; text-transform:uppercase; letter-spacing:0.08em; page-break-after:avoid; }
+    p { page-break-inside:avoid; }
     table { width:100%; border-collapse:collapse; font-size:10px; }
-    th { font-size:9px; font-weight:600; text-transform:uppercase; letter-spacing:0.06em; color:${ACCENT}; padding:4px 6px; border-bottom:2px solid #dbeafe; text-align:left; background:#f8fafc; }
-    td { padding:4px 6px; border-bottom:1px solid #f1f5f9; vertical-align:top; }
+    th { font-size:9px; font-weight:600; text-transform:uppercase; letter-spacing:0.06em; color:${ACCENT}; padding:5px 7px; border-bottom:2px solid #dbeafe; text-align:left; background:#f8fafc; }
+    td { padding:5px 7px; border-bottom:1px solid #f1f5f9; vertical-align:top; }
+    tr { page-break-inside:avoid; }
     tr:last-child td { border-bottom:none; }
     @media print {
       body { -webkit-print-color-adjust:exact; print-color-adjust:exact; }
       .page { margin:0; padding:10mm 13mm; }
-      .page-cover { margin:0; }
       @page { size:A4; margin:0; }
     }
   `;
@@ -653,7 +666,6 @@ export function openPdfReport({ report, sources }) {
   <style>${css()}</style>
 </head>
 <body>
-  ${pageCover(exec, snap, date)}
   ${page1(exec, date)}
   ${page2(snap, exec, date)}
   ${page3(tl, date)}
