@@ -8,6 +8,8 @@
 ![Platform](https://img.shields.io/badge/Platform-macOS-lightgrey?style=for-the-badge)
 ![License](https://img.shields.io/badge/License-Private-red?style=for-the-badge)
 
+<p align="center"><img src="docs/screenshots/iris_app.png" alt="IRIS input screen" width="860"></p>
+
 ---
 
 ## Overview
@@ -17,6 +19,14 @@ IRIS is a local AI-powered tool built for SOC analysts and IR teams. It ingests 
 Built following **CrowdStrike, Mandiant, and Unit 42** reporting standards. The report uses an inverted pyramid structure: leadership reads the executive sections up top, analysts reference the technical detail below.
 
 > **No cloud storage. No SaaS. Runs entirely on your machine** — only the Claude API call leaves your environment.
+
+---
+
+## Sample Output
+
+<p align="center"><img src="docs/screenshots/iris_pdf_p1.png" alt="Executive summary" width="280">&nbsp;<img src="docs/screenshots/iris_pdf_p5.png" alt="Attack timeline" width="280">&nbsp;<img src="docs/screenshots/iris_pdf_p10.png" alt="MITRE ATT&CK analysis" width="280"></p>
+
+<p align="center"><sub>Executive summary · Attack timeline · MITRE ATT&CK analysis. Pages from a brief generated from the synthetic <code>sample-incident/</code> data.</sub></p>
 
 ---
 
